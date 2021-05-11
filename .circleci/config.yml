@@ -21,17 +21,7 @@ jobs:
           command: "make install"
       - run:
           command: "make test"
-  upload-coverage:
-    environment:
-      - CC_TEST_REPORTER_ID: YOUR_REPO_CC_TEST_REPORTER_ID
-    steps:
-      - attach_workspace:
-          at: ~/repo/tmp
-      - run:
-          name: Upload coverage results to Code Climate
-          command: |
-            ./tmp/cc-test-reporter sum-coverage tmp/codeclimate.*.json -p 2 -o tmp/codeclimate.total.json
-            ./tmp/cc-test-reporter upload-coverage -i tmp/codeclimate.total.json
+
 workflows:
   version: 2
   build-master:
@@ -39,3 +29,4 @@ workflows:
       - make:
         name: make
         env: prod
+

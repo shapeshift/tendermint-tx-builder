@@ -22,5 +22,4 @@ workflows:
   version: 2
   build-main:
     jobs:
-      - make:
-        name: make
+      - make

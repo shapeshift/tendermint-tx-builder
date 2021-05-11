@@ -23,4 +23,4 @@ workflows:
   build-main:
     jobs:
       - make:
-        name: make
+        name: "make"

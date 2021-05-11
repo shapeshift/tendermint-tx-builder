@@ -28,4 +28,3 @@ workflows:
     jobs:
       - make:
         name: make
-        env: prod

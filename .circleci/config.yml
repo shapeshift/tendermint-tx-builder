@@ -7,10 +7,6 @@ executors:
 
 jobs:
   make:
-    parameters:
-      env:
-        description: stage or prod
-        type: string
     steps:
       - checkout
       - setup_remote_docker:
@@ -26,4 +22,3 @@ workflows:
     jobs:
       - make:
         name: make
-        env: prod

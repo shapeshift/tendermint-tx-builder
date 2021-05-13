@@ -15,7 +15,8 @@ jobs:
           command: "make install"
       - run:
           command: "make test"
-
+      - run:
+          command: "make publish"
 workflows:
   version: 2
   build-main:

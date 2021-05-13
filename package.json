@@ -1,16 +1,19 @@
 {
-  "name": "test-jest-ts",
-  "version": "1.0.0",
+  "name": "tendermint-tx-builder",
+  "version": "1.0.2",
   "description": "",
-  "main": "index.js",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
-    "test": "jest",
-    "coverage": "jest --coverage"
+    "test": "jest --coverage",
+    "build": "tsc -p .",
+    "prepublish": "npm run build"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/google-protobuf": "^3.15.2",
     "@types/jest": "^26.0.22",
     "jest": "^26.6.3",
     "ts-jest": "^26.5.5",
@@ -23,6 +26,8 @@
     "@shapeshiftoss/hdwallet-core": "^1.14.1-alpha.0",
     "@types/node": "^15.0.2",
     "bip39": "^3.0.4",
-    "codeclimate-test-reporter": "^0.5.1"
+    "codeclimate-test-reporter": "^0.5.1",
+    "fiosdk-offline": "^1.2.21",
+    "google-protobuf": "^3.17.0"
   }
 }

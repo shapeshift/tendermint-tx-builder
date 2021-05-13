@@ -1,5 +1,4 @@
 import {sign,createSignedTx} from '../src/index';
-import * as core from "@shapeshiftoss/hdwallet-core";
 let {
     SLIP_44_BY_LONG,
     bip32ToAddressNList
@@ -26,7 +25,7 @@ describe('signs Tendermint transactions', async function() {
     for(let i = 0; i < supported_assets.length; i++){
         let asset = supported_assets[i]
 
-        it('signs a mainnet '+asset+' reference transaction', async function() {
+        it('signs a mainnet '+asset+' reference transfer transaction', async function() {
             //get reference data
             let referenceTx = fs.readFileSync('./src/reference-data/tx01.mainnet.'+asset+'.json');
             referenceTx = JSON.parse(referenceTx.toString())

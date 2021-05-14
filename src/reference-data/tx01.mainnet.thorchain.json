@@ -1,4 +1,7 @@
 {
+  "chain_id": "thorchain",
+  "account_number": "17",
+  "sequence": "2",
   "fee":{
     "amount":[
       {

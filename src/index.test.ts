@@ -12,10 +12,10 @@ const log = require("@pioneer-platform/loggerdog")()
 
 const supported_assets = [
     'cosmos',
-    // 'thorchain',
-    // 'terra',
-    // 'kava',
-    // 'secret'
+    'thorchain',
+    'terra',
+    'kava',
+    'secret'
 ]
 
 const REFERENCE_SEED = "alcohol woman abuse must during monitor noble actual mixed trade anger aisle"
@@ -38,12 +38,12 @@ describe('signs Tendermint transactions', async function() {
             expect(referenceTx).toBeTruthy();
             expect(referenceTxSigned).toBeTruthy();
 
-            const network = getNetwork("cosmos");
+            const network = getNetwork(asset);
             const wallet = bitcoin.bip32.fromSeed(await mnemonicToSeed(REFERENCE_SEED), network);
 
             const masterPath = bip32ToAddressNList("m/44'/"+SLIP_44_BY_LONG[asset].toString()+"'/0'/0/0")
             log.info(tag,"masterPath: ",masterPath)
-            const keyPair = util.getKeyPair(wallet, masterPath, "cosmos");
+            const keyPair = util.getKeyPair(wallet, masterPath, asset);
             log.info(tag,"keyPair: ",keyPair)
 
             const result = await sign(referenceTx, keyPair, referenceTx.sequence, referenceTx.account_number, referenceTx.chain_id);

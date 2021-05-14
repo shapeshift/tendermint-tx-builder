@@ -1,4 +1,7 @@
 {
+  "chain_id": "terra",
+  "account_number": "0",
+  "sequence": "0",
   "msg":[
     {
       "type":"bank/MsgSend",
@@ -24,13 +27,6 @@
     ]
   },
   "signatures":[
-    {
-      "signature":"MKweMoRVIjftymHyXP/3Enmims5Ab48/ZsuSn22omfwoFgv/SPpmAR0FLeWBgARLPa5mpChz8BPL5zUJmInx6w==",
-      "pub_key":{
-        "type":"tendermint/PubKeySecp256k1",
-        "value":"Ag3RSURmEJLUFtvw6xG3GUWgXB6EvrwEKSHuV0tZTwvE"
-      }
-    }
   ],
   "memo":"testmemo"
 }

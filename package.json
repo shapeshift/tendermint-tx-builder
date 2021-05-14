@@ -1,11 +1,11 @@
 {
   "name": "tendermint-tx-builder",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
-    "test": "jest",
+    "test": "jest --verbose --silent=true",
     "coverage": "jest --coverage",
     "build": "tsc -p .",
     "prepublish": "npm run build"
@@ -23,7 +23,7 @@
   "dependencies": {
     "@bithighlander/bitcoin-cash-js-lib": "^5.2.1",
     "@pioneer-platform/loggerdog": "^8.0.1",
-    "@pioneer-platform/pioneer-coins": "^8.0.2",
+    "@pioneer-platform/pioneer-coins": "^8.0.3",
     "@shapeshiftoss/hdwallet-core": "^1.14.1-alpha.0",
     "@types/node": "^15.0.2",
     "bip39": "^3.0.4",

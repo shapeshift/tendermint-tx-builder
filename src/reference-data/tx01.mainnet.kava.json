@@ -1,4 +1,7 @@
 {
+  "chain_id": "kava",
+  "account_number": "16354",
+  "sequence": "5",
   "msg":[
     {
       "type":"cosmos-sdk/MsgSend",

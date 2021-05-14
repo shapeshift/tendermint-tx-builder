@@ -9,7 +9,7 @@ install::
 
 test::
 	npm run test && npm run coverage
-	#npm install -g codeclimate-test-reporter && CODECLIMATE_REPO_TOKEN= codeclimate-test-reporter < coverage/lcov.info
+	npm install -g codeclimate-test-reporter && CODECLIMATE_REPO_TOKEN=${CODECLIMATE_REPO_TOKEN} codeclimate-test-reporter < coverage/lcov.info
 
 publish::
-	npm publish --access public
+	npm publish

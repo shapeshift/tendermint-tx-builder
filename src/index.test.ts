@@ -43,10 +43,10 @@ describe('signs Tendermint transactions', async function() {
 
             const masterPath = bip32ToAddressNList("m/44'/"+SLIP_44_BY_LONG[asset].toString()+"'/0'/0/0")
             log.info(tag,"masterPath: ",masterPath)
-            const keyPair = util.getKeyPair(wallet, masterPath, asset);
-            log.info(tag,"keyPair: ",keyPair)
+            // const keyPair = util.getKeyPair(wallet, masterPath, asset);
+            // log.info(tag,"keyPair: ",keyPair)
 
-            const result = await sign(referenceTx, keyPair, referenceTx.sequence, referenceTx.account_number, referenceTx.chain_id);
+            const result = await sign(referenceTx, wallet, referenceTx.sequence, referenceTx.account_number, referenceTx.chain_id);
             log.info(tag,"result: ",result)
             const SignedTx = await createSignedTx(referenceTx, result);
             log.info(tag,"SignedTx: ",SignedTx)

@@ -5,11 +5,7 @@ const sha256 = require("crypto-js/sha256")
 export async function sign(jsonTx:any, wallet:any, sequence:string, account_number:string, chain_id:string) {
     let tag = " | sign | ";
     try {
-        // if(!wallet.privateKey) throw Error("Failed to get privkey!")
-        // if(!wallet.publicKey) throw Error("Failed to get publicKey!")
         const signMessage = await create_sign_message(jsonTx, sequence, account_number, chain_id)
-
-        console.log("wallet: ",wallet)
 
         const signatureBuffer = await sign_with_privkey(signMessage, wallet.privateKey !== undefined ? wallet.privateKey : wallet)
 
@@ -83,8 +79,6 @@ let prepareSignBytes = function (jsonTx: any):any {
 const sign_with_privkey = async function(signMessage: string, privateKey: any | { valueOf(): string; } | { [Symbol.toPrimitive](hint: "string"): string; }){
     let tag = " | sign_with_privkey | "
     try{
-        console.log(tag,"signMessage: ",typeof(signMessage))
-        console.log(tag,"signMessage: ",signMessage)
         if(!signMessage) throw Error("signMessage required!")
 
         const signature = (typeof privateKey.sign === "function" ? privateKey.sign(signMessage) : (() => {

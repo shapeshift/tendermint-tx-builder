@@ -7,16 +7,24 @@ executors:
 
 jobs:
   make:
-    resource_class: xlarge
     executor: pulumi
     steps:
       - checkout
       - run:
-          command: "make install"
+          command: "printf '//registry.npmjs.org/:_authToken=%s' \"${NPM_TOKEN}\" > .npmrc"
       - run:
-          command: "make test"
+          command: "npm ci"
       - run:
-          command: "make publish"
+          command: "npm run build"
+      - run:
+          command: "npm run test"
+      - run:
+          command: "npm run coverage"
+      - run:
+          command: "npm run codeclimate"
+      - run:
+          command: "npm publish"
+
 workflows:
   version: 2
   build-main:

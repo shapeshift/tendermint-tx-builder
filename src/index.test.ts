@@ -15,7 +15,8 @@ const supported_assets = [
     'thorchain',
     'terra',
     'kava',
-    'secret'
+    'secret',
+    'osmosis'
 ]
 
 const REFERENCE_SEED = "alcohol woman abuse must during monitor noble actual mixed trade anger aisle"

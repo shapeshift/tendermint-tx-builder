@@ -12,4 +12,4 @@ test::
 	sudo npm install -g codeclimate-test-reporter && CODECLIMATE_REPO_TOKEN=${CODECLIMATE_REPO_TOKEN} codeclimate-test-reporter < coverage/lcov.info
 
 publish::
-	npm publish
+	npm publish --dry-run

@@ -164,7 +164,7 @@ const networks: Networks = {
 };
 
 //TODO: all below are missing network data
-for (const coin of ["bitcoincash", "thorchain", "secret", "terra", "kava", "cardano", "cosmos", "binance", "ethereum"])
+for (const coin of ["bitcoincash", "thorchain", "secret", "terra", "kava", "cardano", "cosmos","osmosis", "binance", "ethereum"])
   networks[coin] = networks.bitcoin;
 
 export function getNetwork(coin: string, scriptType?: string): Network {

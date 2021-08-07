@@ -6,6 +6,7 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "test": "jest --verbose --silent=true",
+    "test-debug": "jest --verbose",
     "coverage": "jest --coverage",
     "build": "tsc -p .",
     "prepublish": "npm run build"
@@ -23,7 +24,7 @@
   "dependencies": {
     "@bithighlander/bitcoin-cash-js-lib": "^5.2.1",
     "@pioneer-platform/loggerdog": "^8.0.1",
-    "@pioneer-platform/pioneer-coins": "^8.0.3",
+    "@pioneer-platform/pioneer-coins": "^8.1.19",
     "@shapeshiftoss/hdwallet-core": "^1.14.1-alpha.0",
     "@types/node": "^15.0.2",
     "bip39": "^3.0.4",

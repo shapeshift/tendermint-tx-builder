@@ -1,0 +1,28 @@
+{
+  "account_number": "16354",
+  "chain_id": "osmosis-1",
+  "sequence": "5",
+  "fee":{
+    "amount":[
+      {
+        "denom":"uosmo",
+        "amount":"2800"
+      }
+    ],
+    "gas":"80000"
+  },
+  "memo": "",
+  "msg": [
+    {
+      "type":"cosmos-sdk/MsgDelegate",
+      "value":{
+        "delegator_address":"osmo15cenya0tr7nm3tz2wn3h3zwkht2rxrq7g9ypmq",
+        "validator_address":"osmovaloper1clpqr4nrk4khgkxj78fcwwh6dl3uw4ep88n0y4",
+        "amount":{
+          "denom":"uosmo",
+          "amount":"3000"
+        }
+      }
+    }
+  ]
+}

@@ -28,10 +28,10 @@ describe('signs Tendermint transactions', async function() {
 
         it('signs a mainnet '+asset+' reference transfer transaction', async function() {
             //get reference data
-            let referenceTx = fs.readFileSync('./src/reference-data/tx01.mainnet.'+asset+'.json');
+            let referenceTx = fs.readFileSync('./src/reference-data/transfers/tx01.mainnet.'+asset+'.json');
             referenceTx = JSON.parse(referenceTx.toString())
 
-            let referenceTxSigned = fs.readFileSync('./src/reference-data/tx01.mainnet.'+asset+'.signed.json');
+            let referenceTxSigned = fs.readFileSync('./src/reference-data/transfers/tx01.mainnet.'+asset+'.signed.json');
             referenceTxSigned = JSON.parse(referenceTxSigned.toString())
 
             log.info(tag,"referenceTx: ",referenceTx)

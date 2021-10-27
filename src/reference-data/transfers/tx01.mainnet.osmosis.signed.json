@@ -29,7 +29,7 @@
         "type":"tendermint/PubKeySecp256k1",
         "value":"A6enCcw1NHqwuGmQTse6ve3iP6oIfJBeM9oJt/1g1l9B"
       },
-      "signature":"ko3FHToUoVPU54TNvjVWYjFALqWfZQ0QNFLVQRCHx5oySalvbFljfKDi0uEr9Ro6wE0B5CI0bJkcEUnVI2dAvw=="
+      "signature":"TQpZ1mMzHUOS+/OUe+tOeKHZBNKouu5PhhSR2ClWxvY/K9TR+VCStNDxh4Rk+79KpFWUf+hwphYflYgS451fRQ=="
     }
   ],
   "memo":"hello world",

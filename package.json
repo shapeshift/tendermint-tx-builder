@@ -1,9 +1,12 @@
 {
-  "name": "tendermint-tx-builder",
+  "name": "@shapeshiftoss/tendermint-tx-builder",
   "version": "1.0.12",
   "description": "",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "jest --verbose --silent=true",
     "test-debug": "jest --verbose",

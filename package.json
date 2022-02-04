@@ -23,12 +23,16 @@
   },
   "dependencies": {
     "@bithighlander/bitcoin-cash-js-lib": "^5.2.1",
+    "@cosmjs/proto-signing": "^0.27.1",
+    "@cosmjs/stargate": "^0.27.1",
     "@pioneer-platform/loggerdog": "^8.0.1",
+    "@pioneer-platform/osmosis-tx-codecs": "^8.1.19",
     "@pioneer-platform/pioneer-coins": "^8.1.19",
     "@shapeshiftoss/hdwallet-core": "latest",
     "@types/node": "^15.0.2",
     "bip39": "^3.0.4",
     "codeclimate-test-reporter": "^0.5.1",
+    "cosmjs-types": "^0.4.1",
     "fiosdk-offline": "^1.2.21",
     "google-protobuf": "^3.17.0"
   }

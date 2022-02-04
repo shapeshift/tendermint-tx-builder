@@ -1,113 +1,224 @@
 
-const secp256k1 = require('secp256k1')
-const sha256 = require("crypto-js/sha256")
+import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { SigningStargateClient, defaultRegistryTypes as defaultStargateTypes } from "@cosmjs/stargate";
+import { coins, Registry } from "@cosmjs/proto-signing";
+import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import { HdPath, Slip10RawIndex } from "@cosmjs/crypto";
+// import {osmosis} from "@pioneer-platform/osmosis-tx-codecs"
 
-export async function sign(jsonTx:any, wallet:any, sequence:string, account_number:string, chain_id:string) {
+export async function sign(jsonTx:any, seed:string, sequence:string, account_number:string, chain_id:string, prefix:string) {
     let tag = " | sign | ";
     try {
-        const signMessage = await create_sign_message(jsonTx, sequence, account_number, chain_id)
+        //TODO dont assume mnemonic
+        let path = makeCosmoshubPath(0)
+        // const myRegistry = new Registry(defaultStargateTypes);
+        const wallet = await DirectSecp256k1HdWallet.fromMnemonic(seed,{hdPaths: [path],prefix});
+        const clientOffline = await SigningStargateClient.offline(wallet);
+        const [account] = await wallet.getAccounts();
 
-        const signatureBuffer = await sign_with_privkey(signMessage, wallet.privateKey !== undefined ? wallet.privateKey : wallet)
+        // myRegistry.register("/gamm.swap-exact-amount-in", osmosis.v1beta1.MsgSwapExactAmountIn);
 
-        const pubKeyBuffer = Buffer.from(wallet.publicKey, `hex`)
+        let {msg,from,fee,memo} = parse_legacy_tx_format(jsonTx)
+        if(from !== account.address){
+            console.log("from:",from)
+            console.log("account: ",account.address)
+            console.error("invalid from address!")
+        }
 
-        return format_signature(
-            signatureBuffer,
-            pubKeyBuffer
-        )
+        let txData:any = {
+            accountNumber: account_number,
+            sequence: sequence,
+            chainId: chain_id,
+            msgs: [msg],
+            fee,
+            memo,
+        }
+        const signerData: any = {
+            accountNumber: txData.accountNumber,
+            sequence: txData.sequence,
+            chainId: txData.chainId,
+        };
+
+        console.log("{msg,from,fee}: ",{msg,from,fee})
+        console.log("MSG: ",JSON.stringify(msg))
+        const txRaw = await clientOffline.sign(
+            from,
+            txData.msgs,
+            txData.fee,
+            txData.memo,
+            signerData,
+        );
+
+        console.log("txRaw: ",txRaw)
+        // @ts-ignore
+        let body = txRaw.bodyBytes.toString("base64")
+        // @ts-ignore
+        let authInfoBytes = txRaw.authInfoBytes.toString("base64")
+        // @ts-ignore
+        let signatures = [new Buffer(txRaw.signatures[0]).toString("base64")]
+
+        let output = {
+            // @ts-ignore
+            serialized:TxRaw.encode(txRaw).finish().toString("base64"),
+            body,
+            authInfoBytes,
+            signatures
+        }
+        console.log("output: ",output)
+        // @ts-ignore
+        return output
     } catch (e) {
         console.error(tag, "e: ", e);
-        return {};
-    }
-}
-
-export async function createSignedTx(tx: any, signature: any) {
-    if(!tx.signatures) tx.signatures = []
-    tx.signatures = [signature]
-    return tx
-}
-
-const create_sign_message = async function(jsonTx: any, sequence: string, account_number: string, chain_id: string){
-    let tag = " | create_sign_message | "
-    try{
-        //{ sequence, account_number, chain_id }
-
-        // sign bytes need amount to be an array
-        const fee:any = {
-            amount: jsonTx.fee.amount || [],
-            gas: jsonTx.fee.gas
-        }
-
-        return JSON.stringify(
-            prepareSignBytes({
-                //@ts-ignore
-                fee,
-                memo: jsonTx.memo,
-                msgs: jsonTx.msg, // weird msg vs. msgs
-                sequence,
-                account_number,
-                chain_id
-            })
-        )
-
-    }catch(e){
-        console.error(e)
         throw Error(e)
     }
 }
 
-let prepareSignBytes = function (jsonTx: any):any {
-    if (Array.isArray(jsonTx)) {
-        return jsonTx.map(prepareSignBytes)
-    }
-
-    // string or number
-    if (typeof jsonTx !== `object`) {
-        return jsonTx
-    }
-
-    const sorted:any = {}
-    Object.keys(jsonTx)
-        .sort()
-        .forEach(key => {
-            if (jsonTx[key] === undefined || jsonTx[key] === null) return
-            sorted[key] = prepareSignBytes(jsonTx[key])
-        })
-    return sorted
+function makeCosmoshubPath(a: number): HdPath {
+    return [
+        Slip10RawIndex.hardened(44),
+        Slip10RawIndex.hardened(118),
+        Slip10RawIndex.hardened(0),
+        Slip10RawIndex.normal(0),
+        Slip10RawIndex.normal(a),
+    ];
 }
 
-const sign_with_privkey = async function(signMessage: string, privateKey: any | { valueOf(): string; } | { [Symbol.toPrimitive](hint: "string"): string; }){
-    let tag = " | sign_with_privkey | "
+const parse_legacy_tx_format = function(jsonTx:any){
     try{
-        if(!signMessage) throw Error("signMessage required!")
+        let txType = jsonTx.msg[0].type
+        if(!txType) throw Error("Invalid jsonTx input")
+        if(jsonTx.msg[1]) throw Error("multiple msgs not supported!")
 
-        const signature = (typeof privateKey.sign === "function" ? privateKey.sign(signMessage) : (() => {
-            const signHash = Buffer.from(sha256(signMessage).toString(), `hex`);
-            return secp256k1.sign(signHash, Buffer.from(privateKey, `hex`)).signature;
-        })());
-        return signature
+        let msg
+        let from
+        let fee
+        let memo
+        //switch for each tx type supported
+        switch (txType) {
+            case 'cosmos-sdk/MsgSend':
+                if(!jsonTx.msg[0].value.from_address) throw Error("Missing from_address in msg[0]")
+                if(!jsonTx.msg[0].value.to_address) throw Error("Missing to_address in msg[0]")
+                if(!jsonTx.msg[0].value.amount[0].amount) throw Error("Missing amount in msg[0] value.amount[0]")
+                from = jsonTx.msg[0].value.from_address
+                memo = jsonTx.memo
+                const msgSend: any = {
+                    fromAddress: jsonTx.msg[0].value.from_address,
+                    toAddress: jsonTx.msg[0].value.to_address,
+                    amount: coins(parseInt(jsonTx.msg[0].value.amount[0].amount), jsonTx.msg[0].value.amount[0].denom),
+                };
+                msg = {
+                    typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+                    value: msgSend,
+                };
+                fee = {
+                    amount: coins(parseInt(jsonTx.fee.amount[0].amount), jsonTx.fee.amount[0].denom),
+                    gas: jsonTx.fee.gas,
+                };
+                break;
+            case 'cosmos-sdk/MsgDelegate':
+                if(!jsonTx.msg[0].value.delegator_address) throw Error("Missing delegator_address in msg[0]")
+                if(!jsonTx.msg[0].value.validator_address) throw Error("Missing validator_address in msg[0]")
+                if(!jsonTx.msg[0].value.amount.amount) throw Error("Missing amount in msg[0] value.amount[0]")
+                from = jsonTx.msg[0].value.delegator_address
+                memo = jsonTx.memo
+                const msgDelegate: any = {
+                    delegatorAddress: jsonTx.msg[0].value.delegator_address,
+                    validatorAddress: jsonTx.msg[0].value.validator_address,
+                    amount: coins(parseInt(jsonTx.msg[0].value.amount.amount), jsonTx.msg[0].value.amount.denom)[0],
+                };
+                msg = {
+                    typeUrl: "/cosmos.staking.v1beta1.MsgDelegate",
+                    value: msgDelegate,
+                };
+                fee = {
+                    amount: coins(parseInt(jsonTx.fee.amount[0].amount), jsonTx.fee.amount[0].denom),
+                    gas: jsonTx.fee.gas,
+                };
+                break;
+            case 'cosmos-sdk/MsgUndelegate':
+                if(!jsonTx.msg[0].value.delegator_address) throw Error("Missing delegator_address in msg[0]")
+                if(!jsonTx.msg[0].value.validator_address) throw Error("Missing validator_address in msg[0]")
+                if(!jsonTx.msg[0].value.amount.amount) throw Error("Missing amount in msg[0] value.amount[0]")
+                from = jsonTx.msg[0].value.delegator_address
+                memo = jsonTx.memo
+                const msgUnDelegate: any = {
+                    delegatorAddress: jsonTx.msg[0].value.delegator_address,
+                    validatorAddress: jsonTx.msg[0].value.validator_address,
+                    amount: coins(parseInt(jsonTx.msg[0].value.amount.amount), jsonTx.msg[0].value.amount.denom)[0],
+                };
+                msg = {
+                    typeUrl: "/cosmos.staking.v1beta1.MsgUndelegate",
+                    value: msgUnDelegate,
+                };
+                fee = {
+                    amount: coins(parseInt(jsonTx.fee.amount[0].amount), jsonTx.fee.amount[0].denom),
+                    gas: jsonTx.fee.gas,
+                };
+                break;
+            case 'cosmos-sdk/MsgBeginRedelegate':
+                if(!jsonTx.msg[0].value.delegator_address) throw Error("Missing delegator_address in msg[0]")
+                if(!jsonTx.msg[0].value.validator_src_address) throw Error("Missing validator_src_address in msg[0]")
+                if(!jsonTx.msg[0].value.validator_dst_address) throw Error("Missing validator_dst_address in msg[0]")
+                if(!jsonTx.msg[0].value.amount.amount) throw Error("Missing amount in msg[0] value.amount[0]")
+                from = jsonTx.msg[0].value.delegator_address
+                memo = jsonTx.memo
+                const msgReDelegate: any = {
+                    delegatorAddress: jsonTx.msg[0].value.delegator_address,
+                    validatorSrcAddress: jsonTx.msg[0].value.validator_src_address,
+                    validatorDstAddress: jsonTx.msg[0].value.validator_dst_address,
+                    amount: coins(parseInt(jsonTx.msg[0].value.amount.amount), jsonTx.msg[0].value.amount.denom)[0],
+                };
+                msg = {
+                    typeUrl: "/cosmos.staking.v1beta1.MsgBeginRedelegate",
+                    value: msgReDelegate,
+                };
+                fee = {
+                    amount: coins(parseInt(jsonTx.fee.amount[0].amount), jsonTx.fee.amount[0].denom),
+                    gas: jsonTx.fee.gas,
+                };
+                break;
+            case 'cosmos-sdk/MsgWithdrawDelegatorReward':
+                if(!jsonTx.msg[0].value.delegator_address) throw Error("Missing delegator_address in msg[0]")
+                if(!jsonTx.msg[0].value.validator_address) throw Error("Missing validator_address in msg[0]")
+                if(!jsonTx.msg[0].value.amount.amount) throw Error("Missing amount in msg[0] value.amount[0]")
+                from = jsonTx.msg[0].value.delegator_address
+                memo = jsonTx.memo
+                const msgRewards: any = {
+                    delegatorAddress: jsonTx.msg[0].value.delegator_address,
+                    validatorAddress: jsonTx.msg[0].value.validator_address,
+                    amount: coins(parseInt(jsonTx.msg[0].value.amount.amount), jsonTx.msg[0].value.amount.denom)[0],
+                };
+                msg = {
+                    typeUrl: "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward",
+                    value: msgRewards,
+                };
+                fee = {
+                    amount: coins(parseInt(jsonTx.fee.amount[0].amount), jsonTx.fee.amount[0].denom),
+                    gas: jsonTx.fee.gas,
+                };
+                break;
+            case 'osmosis/gamm/swap-exact-amount-in':
+                //TODO
+                const msgSwap: any = {
 
-    }catch(e){
-        console.error(e)
-        throw Error(e)
-    }
-}
-
-// signature, sequence, account_number, publicKey
-const format_signature = async function(signature: { toString: (arg0: string) => any; }, publicKey: Buffer){
-    let tag = " | format_signature | "
-    try{
-
-        return {
-            signature: signature.toString(`base64`),
-            pub_key: {
-                type: `tendermint/PubKeySecp256k1`, // TODO: allow other keyprpess
-                value: publicKey.toString(`base64`)
-            }
+                };
+                msg = {
+                    typeUrl: "/gamm.swap-exact-amount-in",
+                    value: msgRewards,
+                };
+                fee = {
+                    amount: coins(parseInt(jsonTx.fee.amount[0].amount), jsonTx.fee.amount[0].denom),
+                    gas: jsonTx.fee.gas,
+                };
+                break;
+            default:
+                throw Error("Unhandled tx type! type: "+txType)
         }
-
+        if(!from) throw Error("Failed to parse from address!")
+        if(!msg) throw Error("Failed to parse msg!")
+        if(!fee) throw Error("Failed to parse fee!")
+        return {msg,from,fee,memo}
     }catch(e){
-        console.error(e)
         throw Error(e)
     }
 }
